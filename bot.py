@@ -1,7 +1,7 @@
 import telebot
 import config
 import random
-
+import csv
 from telebot import types
 
 bot = telebot.TeleBot(config.token)
@@ -13,11 +13,13 @@ inline_keyboard.add(btn1, btn2)
 
 info = {}
 
+
 @bot.message_handler(commands=['start'])
 def welcome(message):
     chat_id = message.chat.id
-
     bot.send_message(chat_id, f'Выберите категорию {message.chat.first_name}', reply_markup=inline_keyboard)
+    list_of_stickers = ['CAACAgIAAxkBAAEEsdlieoFe62ogzoI028UQI2UIIDVTlgACRwADWbv8JVyd1qxN32EsJAQ', 'CAACAgIAAxkBAAEEsd9ieoF3lP5aM5006B5eQEOG_MEQ1wACBQADwDZPE_lqX5qCa011JAQ']
+    bot.send_sticker(chat_id, random.choice(list_of_stickers))
 
 
 @bot.callback_query_handler(func=lambda c: True)
@@ -46,6 +48,7 @@ def get_category_costs(message):
     chat_id = message.chat.id
     info['category'] = message.text
     bot.send_message(chat_id, "Сумма ваших затрат")
+
     bot.register_next_step_handler(message,get_sum_costs)
 
 
@@ -57,56 +60,43 @@ def get_category_income(message):
 
 
 def get_sum_costs(message):
+    stickers = [
+        'CAACAgIAAxkBAAEEseFieoF9vZGwljRu_qcRb-IpMVx3MwACIAADwDZPE_QPK7o-X_TPJAQ',
+        'CAACAgIAAxkBAAEEseVieoLMhw5MOcvV6su3g1VcME3GHAACTAADWbv8JfRkx3MXxG1fJAQ',
+        'CAACAgIAAxkBAAEEsedieoLQ3-szQ9OszjQJwrnW8XNizgACEQADwDZPEw2qsw_cHj7lJAQ',
+    ]
+
     chat_id = message.chat.id
     info['sum'] = message.text
+
+    csv_file = 'costs.csv'
+    with open(csv_file, 'a', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow((info['category'], info['sum']))
+
     bot.send_message(chat_id, 'Сумма расходов зафиксирована')
-    print(info)
+    bot.send_sticker(chat_id, random.choice(stickers))
 
 
 def get_sum_income(message):
+    stickers = [
+        'CAACAgIAAxkBAAEEsd1ieoF1VMGEi5vGhDQRhNLRrcyGFQACFQADwDZPE81WpjthnmTnJAQ',
+        'CAACAgIAAxkBAAEEsdtieoFkaOuQBw0znuS_GnSdJtAENQACRQADWbv8JfvUpDThE_jrJAQ',
+    ]
+
     chat_id = message.chat.id
     info['sum'] = message.text
+
+    csv_file = 'income.csv'
+    with open(csv_file, 'a', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow((info['category'], info['sum']))
+
     bot.send_message(chat_id, 'Мы записали вашу сумму заработок')
-
-    print(info)
-
-# @bot.message_handler(content_types=['text'])
-# def repeat_message(message):
-#     if message.chat.type == 'private':
-#         if message.text == 'Рандомное число':
-#             bot.send_message(message.chat.id, str(random.randint(0, 100)))
-#         elif message.text == 'Как дела?':
-#
-#             markup = types.InlineKeyboardMarkup(row_width=2)
-#             item1 = types.InlineKeyboardButton('Хорошо', callback_data='good')
-#             item2 = types.InlineKeyboardButton('Не очень', callback_data='bad')
-#
-#             markup.add(item1, item2)
-#
-#             bot.send_message(message.chat.id, 'Gooood', reply_markup=markup)
-#         else:
-#             bot.send_message(message.chat.id, 'Я не знаю эту команду')
+    bot.send_sticker(chat_id, random.choice(stickers))
 
 
-    # print(message.chat.id)
-    # print(message.text)
-    # print(bot.get_me())
-    # print(message.from_user)
 
-# @bot.callback_query_handler(func=lambda call: True)
-# def callback_inline(call):
-#     try:
-#         if call.message:
-#             # print(call.message)
-#             if call.data == 'good':
-#                 bot.send_message(call.message.chat.id, 'Вот и отличненько')
-#                 print(call.data)
-#             elif call.data == 'bad':
-#                 bot.send_message(call.message.chat.id, 'Вот и отличненько')
-#                 print()
-#     except:
-#         print("D")
-# #
 if __name__ == '__main__':
     bot.infinity_polling()
 # bot.polling(none_stop=True)
